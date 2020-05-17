@@ -6,6 +6,10 @@
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
     "@types/styled-components": "^5.1.0",
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
+    "eslint": "^7.0.0",
+    "eslint-plugin-react": "^7.20.0",
     "source-map-loader": "^0.2.4",
     "ts-loader": "^7.0.4",
     "typescript": "^3.9.2",
@@ -20,6 +24,8 @@
   },
   "scripts": {
     "start": "webpack-dev-server --open --config webpack.development.config.js",
-    "build": "webpack --config webpack.production.config.js"
+    "build": "webpack --config webpack.production.config.js",
+    "eslint": "./node_modules/.bin/eslint .",
+    "fix": "./node_modules/.bin/eslint --fix ."
   }
 }

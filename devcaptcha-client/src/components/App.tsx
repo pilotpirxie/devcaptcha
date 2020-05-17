@@ -6,12 +6,6 @@ const Container = styled.div`
   color: white;
 `;
 
-export interface IProps {
-    compiler: string;
-}
-
-export const App = (props: IProps) => (
-    <Container>
-        Hello World!
-    </Container>
+export const App = () => (
+  <Container>Hello World!</Container>
 );
