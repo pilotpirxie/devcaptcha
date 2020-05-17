@@ -5,6 +5,7 @@
   "devDependencies": {
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
+    "@types/styled-components": "^5.1.0",
     "source-map-loader": "^0.2.4",
     "ts-loader": "^7.0.4",
     "typescript": "^3.9.2",
@@ -14,7 +15,8 @@
   },
   "dependencies": {
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "styled-components": "^5.1.0"
   },
   "scripts": {
     "start": "webpack-dev-server --open --config webpack.development.config.js",

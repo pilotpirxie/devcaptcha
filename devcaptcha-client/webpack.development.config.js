@@ -1,5 +1,6 @@
 module.exports = {
   mode: "development",
+  devtool: "source-map",
   devServer: {
     contentBase: './public',
     compress: false,
@@ -21,4 +22,8 @@ module.exports = {
       loader: "source-map-loader"
     }]
   },
+  externals: {
+    react: "React",
+    "react-dom": "ReactDOM",
+  }
 };

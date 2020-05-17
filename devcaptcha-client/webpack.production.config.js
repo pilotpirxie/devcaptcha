@@ -2,7 +2,7 @@ module.exports = {
   mode: "production",
   devtool: "source-map",
   output: {
-    filename: 'devcaptcha.js'
+    filename: 'devcaptcha.dist.js'
   },
   resolve: {
     extensions: [".ts", ".tsx", '.js', '.json']

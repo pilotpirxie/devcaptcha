@@ -1,12 +1,17 @@
 import * as React from "react";
+import styled from 'styled-components'
 
-export interface HelloProps {
+const Container = styled.div`
+  background: black;
+  color: white;
+`;
+
+export interface IProps {
     compiler: string;
-    framework: string;
 }
 
-export const Hello = (props: HelloProps) => (
-    <h1>
-        Hello from {props.compiler} and {props.framework}!
-    </h1>
+export const App = (props: IProps) => (
+    <Container>
+        Hello World!
+    </Container>
 );

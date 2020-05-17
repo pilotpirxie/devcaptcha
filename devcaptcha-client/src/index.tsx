@@ -1,9 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { Hello } from "./components/App";
+import { App } from "./components/App";
+
+console.log(Math.random());
 
 ReactDOM.render(
-    <Hello compiler="aaaaaaaa" framework="React" />,
-    document.getElementById("example")
+    <App compiler={"a"} />,
+    window.document.getElementById("example")
 );
