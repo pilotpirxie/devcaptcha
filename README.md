@@ -1,3 +1,5 @@
+![DevCaptcha](https://i.imgur.com/9EhWrPx.png)
+
 # devcaptcha
 Open source captcha made with React, Node and TypeScript for DEV.to community 
 
