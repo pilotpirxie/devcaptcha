@@ -23,4 +23,9 @@ class DevCaptcha implements ICaptcha {
   }
 }
 
+declare global {
+  interface Window { DevCaptcha: object; }
+}
+
+window.DevCaptcha = window.DevCaptcha || {};
 window['DevCaptcha'] = DevCaptcha;
