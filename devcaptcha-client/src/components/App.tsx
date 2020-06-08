@@ -1,7 +1,10 @@
 import * as React from "react";
 import * as PIXI from 'pixi.js';
+
 interface IApp {
-  app: PIXI.Application
+  app: PIXI.Application,
+  dragging: boolean,
+  puzzle: PIXI.Sprite,
 }
 
 export class App extends React.Component<any, IApp> {
@@ -15,9 +18,39 @@ export class App extends React.Component<any, IApp> {
         backgroundColor: 0xeeeeee,
         resolution: window.devicePixelRatio || 1,
       }),
+      dragging: false,
+      puzzle: null
     };
+
+    this.onDragEnd = this.onDragEnd.bind(this);
+    this.onDragStart = this.onDragStart.bind(this);
+    this.onDragMove = this.onDragMove.bind(this);
   }
 
+  onDragStart() {
+    this.setState(() => {
+      return {
+        dragging: true,
+      };
+    });
+  }
+  
+  onDragEnd() {
+    this.setState(() => {
+      return {
+        dragging: false,
+      };
+    });
+  }
+
+  onDragMove(event : any) {
+    if (this.state.dragging) {
+      const puzzle = this.state.puzzle;
+      puzzle.position.x += event.data.originalEvent.movementX;
+      puzzle.position.y += event.data.originalEvent.movementY;
+    }
+  }
+  
   componentDidMount() {
     document.getElementById('devcaptcha-container').appendChild(this.state.app.view);
 
@@ -26,6 +59,29 @@ export class App extends React.Component<any, IApp> {
     background.width = this.state.app.view.width;
     background.height = this.state.app.view.height;
     this.state.app.stage.addChild(background);
+
+    // puzzle
+    const puzzle = PIXI.Sprite.from('https://i.imgur.com/sNPmMi2.png');
+    puzzle.anchor.set(0.5, 0.5);
+    puzzle.alpha = 0.5;
+    puzzle.interactive = true;
+    puzzle.buttonMode = true;
+    puzzle.x = 64;
+    puzzle.y = this.state.app.view.height / 2;
+    puzzle.on('mousedown', this.onDragStart)
+      .on('touchstart', this.onDragStart)
+      .on('mouseup', this.onDragEnd)
+      .on('mouseupoutside', this.onDragEnd)
+      .on('touchend', this.onDragEnd)
+      .on('touchendoutside', this.onDragEnd)
+      .on('mousemove', this.onDragMove)
+      .on('touchmove', this.onDragMove);
+    this.setState(() => {
+      return {
+        puzzle
+      }
+    });
+    this.state.app.stage.addChild(puzzle);
 
     // top stripe
     const stripes = new PIXI.Graphics();
@@ -106,6 +162,37 @@ export class App extends React.Component<any, IApp> {
     submitButtonIcon.y = this.state.app.view.height - 64 + 12;
     this.state.app.stage.addChild(submitButtonIcon);
 
+    // privacy policy
+    const textPrivacy = new PIXI.Text('Privacy', {
+      fontFamily: 'Arial',
+      fontSize: 12,
+      fill: '#777777',
+    });
+    textPrivacy.interactive = true;
+    textPrivacy.buttonMode = true;
+    textPrivacy.on('pointerdown', () => {
+      console.log('aaa');
+    });
+    textPrivacy.anchor.set(0.5, 0.5);
+    textPrivacy.x = 24;
+    textPrivacy.y = this.state.app.view.height - 16;
+    this.state.app.stage.addChild(textPrivacy);
+
+    // terms of service
+    const textTerms = new PIXI.Text('Terms', {
+      fontFamily: 'Arial',
+      fontSize: 12,
+      fill: '#777777',
+    });
+    textTerms.interactive = true;
+    textTerms.buttonMode = true;
+    textTerms.on('pointerdown', () => {
+      console.log('aaa');
+    });
+    textTerms.anchor.set(0.5, 0.5);
+    textTerms.x = 72;
+    textTerms.y = this.state.app.view.height - 16;
+    this.state.app.stage.addChild(textTerms);
   }
 
   render() {
