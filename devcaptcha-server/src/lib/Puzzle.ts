@@ -1,34 +1,39 @@
 // eslint-disable-next-line no-unused-vars
 import {CompositeConfig} from "../models/Composite";
 import {ImageFormat} from "./Optimize";
-
-const path = require('path');
 const sharp = require('sharp');
 
-export default class Background {
+export default class Puzzle {
   private readonly filepath : string;
 
   constructor(filepath : string) {
     this.filepath = filepath;
   }
 
-  public async compositePuzzle(config : CompositeConfig) : Promise<Buffer> {
-    const bg = await sharp(path.join(this.filepath));
+  public async compositeBackground (config : CompositeConfig) : Promise<Buffer> {
+    const puzzle = await sharp(this.filepath);
+    const background = sharp(config.compositeFilepath);
 
-    await bg
+    background.extract({
+      left: 100,
+      top: 100,
+      width: 64,
+      height: 64
+    });
+
+    await puzzle
       .composite([{
-        input: path.join(config.compositeFilepath),
-        top: config.top,
-        left: config.left,
-      }]);
+        input: await background.toBuffer(),
+        blend: 'in'
+      }])
 
 
     if (config.outputFormat === ImageFormat.PNG) {
-      return await bg.png({
+      return await puzzle.png({
         quality: config.outputQuality
       }).toBuffer();
     } else if (config.outputFormat === ImageFormat.JPEG) {
-      return await bg.jpeg({
+      return await puzzle.jpeg({
         quality: config.outputQuality
       }).toBuffer();
     }

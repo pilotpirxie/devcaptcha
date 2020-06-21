@@ -1,15 +1,14 @@
+import Puzzle from "./lib/Puzzle";
+import Optimize, {ImageFormat} from "./lib/Optimize";
+import Background from "./lib/Background";
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const asyncRedis = require("async-redis");
-const fs = require('fs');
 const path = require('path');
-const sharp = require('sharp');
 
 const redisClient = asyncRedis.createClient();
 const app = express();
-
-import Optimize, {ImageFormat} from "./lib/Optimize";
-import Background from "./lib/Background";
 
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
@@ -27,14 +26,18 @@ redisClient.on("error", (err) => {
   console.error(err);
 });
 
+let fileList : Array<string>;
+
 Optimize.dir({
   forceCleanCache: false,
   outputFormat: ImageFormat.JPEG,
-  inputDirectory: '../../public/backgrounds/source/',
-  outputDirectory: '../../public/backgrounds/optimized/',
+  inputDirectory: path.join(__dirname, '../public/backgrounds/source/'),
+  outputDirectory: path.join(__dirname, '../public/backgrounds/optimized/'),
   outputWidth: 480,
   outputHeight: 280,
   outputQuality: 40
+}).then(list => {
+  fileList = list;
 });
 
 function getRandomFileIndex(files: string[]) {
@@ -43,41 +46,31 @@ function getRandomFileIndex(files: string[]) {
 }
 
 app.get('/bg', async (req, res) => {
-  const bgDir = fs.readdirSync(path.join(__dirname, '../public/backgrounds/optimized'));
-  const imageIndex = getRandomFileIndex(bgDir);
+  const imageIndex = getRandomFileIndex(fileList);
 
-  const bgPath = path.join(__dirname, '../public/backgrounds/optimized', bgDir[imageIndex]);
+  const bgPath = path.join(__dirname, '../public/backgrounds/optimized', fileList[imageIndex]);
   const puzzlePath = path.join(__dirname, '../public/puzzle/1.png');
 
-  const bg = new Background(bgPath);
-  const bgBuffer = await bg.compositePuzzle({
-    puzzleFilepath: puzzlePath,
+  const background = new Background(bgPath);
+  const backgroundBuffer = await background.compositePuzzle({
+    compositeFilepath: puzzlePath,
     outputQuality: 40,
     left: 100,
     top: 100,
     outputFormat: ImageFormat.JPEG
   });
 
-  // const puzzle = await sharp(path.join(__dirname, '../puzzle/1.png'));
-  //
-  // const bgCropped = sharp(path.join(__dirname, '../backgrounds/optimized', files[imageIndex]));
-  // bgCropped.extract({
-  //   left: 100,
-  //   top: 100,
-  //   width: 64,
-  //   height: 64
-  // });
-  //
-  // const puzzleBuffer = await puzzle
-  //   .composite([{
-  //     input: await bgCropped.toBuffer(),
-  //     blend: 'in'
-  //   }])
-  //   .png()
-  //   .toBuffer();
+  const puzzle = new Puzzle(puzzlePath);
+  const puzzleBuffer = await puzzle.compositeBackground({
+    compositeFilepath: bgPath,
+    left: 100,
+    top: 100,
+    outputQuality: 40,
+    outputFormat: ImageFormat.PNG
+  });
 
   res.set('Content-Type', 'image/jpeg');
-  res.send(bgBuffer);
+  res.send(puzzleBuffer);
 });
 
 try {
