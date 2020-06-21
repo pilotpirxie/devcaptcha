@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import {CompositeConfig} from "../models/Composite";
+import {CompositeConfig} from "../models/CompositeConfig";
 import {ImageFormat} from "./Optimize";
 
 const path = require('path');

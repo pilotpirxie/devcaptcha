@@ -2,19 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
+// eslint-disable-next-line no-unused-vars
+import {OptimizeConfig} from "../models/OptimizeConfig";
+
 export enum ImageFormat {
   'JPEG',
   'PNG'
-}
-
-export type OptimizeConfig = {
-  inputDirectory: string,
-  outputDirectory: string,
-  forceCleanCache: boolean,
-  outputWidth: number,
-  outputHeight: number,
-  outputQuality: number,
-  outputFormat: ImageFormat
 }
 
 export default class Optimize {
