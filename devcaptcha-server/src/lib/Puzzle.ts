@@ -14,7 +14,7 @@ export default class Puzzle {
     const puzzle = await sharp(this.filepath);
     const background = sharp(config.compositeFilepath);
 
-    background.extract({
+    await background.extract({
       left: config.left,
       top: config.top,
       width: 64,
