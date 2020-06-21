@@ -55,7 +55,8 @@ async function getUserData(req) : Promise<UserData> {
   let puzzleForBackgroundPath: string;
   let puzzleForClientPath: string;
   let positionX: number;
-  let positionY: number
+  let positionY: number;
+  let stringChallenge: Array<string> = [];
 
   const clientIp = getClientIp(req);
   const key = crypto.createHash('md5').update(clientIp).digest("hex");
@@ -68,6 +69,7 @@ async function getUserData(req) : Promise<UserData> {
     puzzleForClientPath = userData.puzzleForClientPath;
     positionX = userData.positionX;
     positionY = userData.positionY;
+    stringChallenge = userData.stringChallenge;
   } else {
     await redisClient.del(key);
     const imageIndex = getRandomFileIndex(fileList);
@@ -76,16 +78,29 @@ async function getUserData(req) : Promise<UserData> {
     puzzleForClientPath = path.join(__dirname, '../public/puzzle/2.png');
     positionX = Math.round(Math.random() * (480 - 128)) + 64;
     positionY = Math.round(Math.random() * (280 - 256)) + 96;
+    for (let i = 0; i < 10; i++) {
+      stringChallenge[i] = crypto.randomBytes(64).toString('base64');
+    }
 
     await redisClient.set(key, JSON.stringify({
       backgroundPath,
       puzzleForBackgroundPath,
       puzzleForClientPath,
       positionX,
-      positionY
+      positionY,
+      stringChallenge
     }), 'EX', 5);
   }
-  return {backgroundPath, puzzleForBackgroundPath, puzzleForClientPath, positionX, positionY, key};
+
+  return {
+    backgroundPath,
+    puzzleForBackgroundPath,
+    puzzleForClientPath,
+    positionX,
+    positionY,
+    key,
+    stringChallenge
+  };
 }
 
 app.get('/init', async (req, res) => {

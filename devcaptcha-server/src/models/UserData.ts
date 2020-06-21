@@ -5,4 +5,5 @@ export type UserData = {
   positionX: number,
   positionY: number,
   key: string,
+  stringChallenge: Array<string>
 }
