@@ -55,7 +55,6 @@ export class App extends React.Component<any, IApp> {
   async componentDidMount() {
     document.getElementById('devcaptcha-container').appendChild(this.state.app.view);
     await fetch('http://localhost:8081/refresh');
-    await wait(100);
 
     // background
     const background = PIXI.Sprite.from('http://localhost:8081/bg.jpeg');

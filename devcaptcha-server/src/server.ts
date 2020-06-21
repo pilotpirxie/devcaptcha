@@ -77,7 +77,7 @@ app.get(['/bg.jpeg', '/puzzle.png', '/refresh'], async (req, res) => {
       puzzlePath,
       positionX,
       positionY
-    }), 'EX', 120);
+    }), 'EX', 10);
   }
 
   if (req.path === '/bg.jpeg') {
@@ -105,7 +105,10 @@ app.get(['/bg.jpeg', '/puzzle.png', '/refresh'], async (req, res) => {
     res.set('Content-Type', 'image/jpeg');
     return res.send(puzzleBuffer);
   } else {
-    return res.json({status: 'refreshed'});
+    const userdataJSON = await redisClient.get(key);
+    if (userdataJSON) {
+      return res.json({status: 'refreshed'});
+    }
   }
 });
 
