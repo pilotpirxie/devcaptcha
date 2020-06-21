@@ -52,7 +52,8 @@ function getRandomFileIndex(files: string[]) {
 
 async function getUserData(req) : Promise<UserData> {
   let backgroundPath: string;
-  let puzzlePath: string;
+  let puzzleForBackgroundPath: string;
+  let puzzleForClientPath: string;
   let positionX: number;
   let positionY: number
 
@@ -63,28 +64,31 @@ async function getUserData(req) : Promise<UserData> {
     const userDataJSON = await redisClient.get(key);
     const userData = JSON.parse(userDataJSON);
     backgroundPath = userData.backgroundPath;
-    puzzlePath = userData.puzzlePath;
+    puzzleForBackgroundPath = userData.puzzleForBackgroundPath;
+    puzzleForClientPath = userData.puzzleForClientPath;
     positionX = userData.positionX;
     positionY = userData.positionY;
   } else {
     await redisClient.del(key);
     const imageIndex = getRandomFileIndex(fileList);
     backgroundPath = path.join(__dirname, '../public/backgrounds/optimized', fileList[imageIndex]);
-    puzzlePath = path.join(__dirname, '../public/puzzle/1.png');
+    puzzleForBackgroundPath = path.join(__dirname, '../public/puzzle/1.png');
+    puzzleForClientPath = path.join(__dirname, '../public/puzzle/2.png');
     positionX = Math.round(Math.random() * (480 - 128)) + 64;
     positionY = Math.round(Math.random() * (280 - 256)) + 96;
 
     await redisClient.set(key, JSON.stringify({
       backgroundPath,
-      puzzlePath,
+      puzzleForBackgroundPath,
+      puzzleForClientPath,
       positionX,
       positionY
-    }), 'EX', 10);
+    }), 'EX', 5);
   }
-  return {backgroundPath, puzzlePath, positionX, positionY, key};
+  return {backgroundPath, puzzleForBackgroundPath, puzzleForClientPath, positionX, positionY, key};
 }
 
-app.get('/refresh', async (req, res) => {
+app.get('/init', async (req, res) => {
   const {key} = await getUserData(req);
 
   const userdataJSON = await redisClient.get(key);
@@ -94,10 +98,10 @@ app.get('/refresh', async (req, res) => {
 });
 
 app.get('/bg.jpeg', async (req, res) => {
-  const {backgroundPath, puzzlePath, positionX, positionY} = await getUserData(req);
+  const {backgroundPath, puzzleForBackgroundPath, positionX, positionY} = await getUserData(req);
   const background = new Background(backgroundPath);
   const backgroundBuffer = await background.compositePuzzle({
-    compositeFilepath: puzzlePath,
+    compositeFilepath: puzzleForBackgroundPath,
     outputQuality: 40,
     left: positionX,
     top: positionY,
@@ -109,9 +113,9 @@ app.get('/bg.jpeg', async (req, res) => {
 });
 
 app.get('/puzzle.png', async (req, res) => {
-  const {backgroundPath, puzzlePath, positionX, positionY} = await getUserData(req);
+  const {backgroundPath, puzzleForClientPath, positionX, positionY} = await getUserData(req);
 
-  const puzzle = new Puzzle(puzzlePath);
+  const puzzle = new Puzzle(puzzleForClientPath);
   const puzzleBuffer = await puzzle.compositeBackground({
     compositeFilepath: backgroundPath,
     left: positionX,

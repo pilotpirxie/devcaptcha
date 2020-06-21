@@ -54,7 +54,7 @@ export class App extends React.Component<any, IApp> {
   
   async componentDidMount() {
     document.getElementById('devcaptcha-container').appendChild(this.state.app.view);
-    await fetch('http://localhost:8081/refresh');
+    await fetch('http://localhost:8081/init');
 
     // background
     const background = PIXI.Sprite.from('http://localhost:8081/bg.jpeg');
@@ -70,7 +70,6 @@ export class App extends React.Component<any, IApp> {
     // puzzle
     const puzzle = PIXI.Sprite.from('http://localhost:8081/puzzle.png');
     puzzle.anchor.set(0.5, 0.5);
-    puzzle.alpha = 0.9;
     puzzle.interactive = true;
     puzzle.buttonMode = true;
     puzzle.x = 64;

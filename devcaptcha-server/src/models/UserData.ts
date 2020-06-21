@@ -1,6 +1,7 @@
 export type UserData = {
   backgroundPath: string,
-  puzzlePath: string,
+  puzzleForBackgroundPath: string,
+  puzzleForClientPath: string,
   positionX: number,
   positionY: number,
   key: string,

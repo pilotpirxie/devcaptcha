@@ -20,6 +20,7 @@ export default class Background {
         input: path.join(config.compositeFilepath),
         top: config.top,
         left: config.left,
+        blend: "over"
       }]);
 
     if (config.outputFormat === ImageFormat.PNG) {
