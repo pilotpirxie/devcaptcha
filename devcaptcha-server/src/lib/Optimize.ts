@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-export enum OptimizeFormat {
+export enum ImageFormat {
   'JPEG',
   'PNG'
 }
@@ -11,10 +11,10 @@ export type OptimizeConfig = {
   inputDirectory: string,
   outputDirectory: string,
   forceCleanCache: boolean,
-  targetWidth: number,
-  targetHeight: number,
-  targetQuality: number,
-  targetFormat: OptimizeFormat
+  outputWidth: number,
+  outputHeight: number,
+  outputQuality: number,
+  outputFormat: ImageFormat
 }
 
 export default class Optimize {
@@ -26,17 +26,17 @@ export default class Optimize {
       if (!outputFileList.includes(file) || config.forceCleanCache) {
         const img = await sharp(path.join(__dirname, config.inputDirectory, file));
         await img.resize({
-          width: config.targetWidth,
-          height: config.targetHeight,
+          width: config.outputWidth,
+          height: config.outputHeight,
         });
 
-        if (config.targetFormat === OptimizeFormat.JPEG) {
+        if (config.outputFormat === ImageFormat.JPEG) {
           await img
-            .jpeg({quality: config.targetQuality})
+            .jpeg({quality: config.outputQuality})
             .toFile(path.join(__dirname, config.outputDirectory, file));
-        } else if (config.targetFormat === OptimizeFormat.PNG) {
+        } else if (config.outputFormat === ImageFormat.PNG) {
           await img
-            .png({quality: config.targetQuality})
+            .png({quality: config.outputQuality})
             .toFile(path.join(__dirname, config.outputDirectory, file));
         }
       }
