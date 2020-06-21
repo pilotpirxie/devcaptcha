@@ -6,6 +6,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const asyncRedis = require("async-redis");
 const path = require('path');
+const {getClientIp} = require('request-ip');
+const cors = require('cors');
+const crypto = require('crypto');
 
 const redisClient = asyncRedis.createClient();
 const app = express();
@@ -15,6 +18,7 @@ app.disable('x-powered-by');
 app.set('port', process.env.PORT || 8081);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors())
 
 app.use((req, res, next) => {
   req.setTimeout(8000);
@@ -41,36 +45,68 @@ Optimize.dir({
 });
 
 function getRandomFileIndex(files: string[]) {
-  const imageIndex = Math.floor(Math.random() * files.length);
-  return imageIndex;
+  return Math.floor(Math.random() * files.length);
 }
 
-app.get('/bg', async (req, res) => {
-  const imageIndex = getRandomFileIndex(fileList);
+app.get(['/bg.jpeg', '/puzzle.png', '/refresh'], async (req, res) => {
+  let backgroundPath: string;
+  let puzzlePath: string;
+  let positionX: number;
+  let positionY: number
 
-  const bgPath = path.join(__dirname, '../public/backgrounds/optimized', fileList[imageIndex]);
-  const puzzlePath = path.join(__dirname, '../public/puzzle/1.png');
+  const clientIp = getClientIp(req);
+  const key = crypto.createHash('md5').update(clientIp).digest("hex");
+  const ttl = await redisClient.ttl(key);
+  if (ttl > 1) {
+    const userdataJSON = await redisClient.get(key);
+    const userdata = JSON.parse(userdataJSON);
+    backgroundPath = userdata.backgroundPath;
+    puzzlePath = userdata.puzzlePath;
+    positionX = userdata.positionX;
+    positionY = userdata.positionY;
+  } else {
+    await redisClient.del(key);
+    const imageIndex = getRandomFileIndex(fileList);
+    backgroundPath = path.join(__dirname, '../public/backgrounds/optimized', fileList[imageIndex]);
+    puzzlePath = path.join(__dirname, '../public/puzzle/1.png');
+    positionX = Math.round(Math.random() * (480 - 128)) + 64;
+    positionY = Math.round(Math.random() * (280 - 256)) + 96;
 
-  const background = new Background(bgPath);
-  const backgroundBuffer = await background.compositePuzzle({
-    compositeFilepath: puzzlePath,
-    outputQuality: 40,
-    left: 100,
-    top: 100,
-    outputFormat: ImageFormat.JPEG
-  });
+    await redisClient.set(key, JSON.stringify({
+      backgroundPath,
+      puzzlePath,
+      positionX,
+      positionY
+    }), 'EX', 120);
+  }
 
-  const puzzle = new Puzzle(puzzlePath);
-  const puzzleBuffer = await puzzle.compositeBackground({
-    compositeFilepath: bgPath,
-    left: 100,
-    top: 100,
-    outputQuality: 40,
-    outputFormat: ImageFormat.PNG
-  });
+  if (req.path === '/bg.jpeg') {
+    const background = new Background(backgroundPath);
+    const backgroundBuffer = await background.compositePuzzle({
+      compositeFilepath: puzzlePath,
+      outputQuality: 40,
+      left: positionX,
+      top: positionY,
+      outputFormat: ImageFormat.JPEG
+    });
 
-  res.set('Content-Type', 'image/jpeg');
-  res.send(puzzleBuffer);
+    res.set('Content-Type', 'image/jpeg');
+    return res.send(backgroundBuffer);
+  } else if (req.path === '/puzzle.png') {
+    const puzzle = new Puzzle(puzzlePath);
+    const puzzleBuffer = await puzzle.compositeBackground({
+      compositeFilepath: backgroundPath,
+      left: positionX,
+      top: positionY,
+      outputQuality: 40,
+      outputFormat: ImageFormat.PNG
+    });
+
+    res.set('Content-Type', 'image/jpeg');
+    return res.send(puzzleBuffer);
+  } else {
+    return res.json({status: 'refreshed'});
+  }
 });
 
 try {

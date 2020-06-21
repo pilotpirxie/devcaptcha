@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as PIXI from 'pixi.js';
+import wait from '../utils/interval';
 
 interface IApp {
   app: PIXI.Application,
@@ -51,19 +52,26 @@ export class App extends React.Component<any, IApp> {
     }
   }
   
-  componentDidMount() {
+  async componentDidMount() {
     document.getElementById('devcaptcha-container').appendChild(this.state.app.view);
+    await fetch('http://localhost:8081/refresh');
+    await wait(100);
 
     // background
-    const background = PIXI.Sprite.from('https://i.imgur.com/OcQSPcR.png');
+    const background = PIXI.Sprite.from('http://localhost:8081/bg.jpeg');
+    background.alpha = 0;
     background.width = this.state.app.view.width;
     background.height = this.state.app.view.height;
     this.state.app.stage.addChild(background);
+    for(let i = 0; i < 100; i++) {
+      background.alpha = i / 100;
+      await wait(8);
+    }
 
     // puzzle
-    const puzzle = PIXI.Sprite.from('https://i.imgur.com/sNPmMi2.png');
+    const puzzle = PIXI.Sprite.from('http://localhost:8081/puzzle.png');
     puzzle.anchor.set(0.5, 0.5);
-    puzzle.alpha = 0.5;
+    puzzle.alpha = 0.9;
     puzzle.interactive = true;
     puzzle.buttonMode = true;
     puzzle.x = 64;

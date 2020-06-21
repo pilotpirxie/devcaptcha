@@ -15,8 +15,8 @@ export default class Puzzle {
     const background = sharp(config.compositeFilepath);
 
     background.extract({
-      left: 100,
-      top: 100,
+      left: config.left,
+      top: config.top,
       width: 64,
       height: 64
     });

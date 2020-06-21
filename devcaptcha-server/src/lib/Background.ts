@@ -22,7 +22,6 @@ export default class Background {
         left: config.left,
       }]);
 
-
     if (config.outputFormat === ImageFormat.PNG) {
       return await bg.png({
         quality: config.outputQuality

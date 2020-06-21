@@ -7,8 +7,10 @@
     "@types/async-redis": "^1.1.1",
     "async-redis": "^1.1.7",
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "querystring": "^0.2.0",
+    "request-ip": "^2.1.3",
     "sharp": "^0.25.4"
   },
   "devDependencies": {
