@@ -52,7 +52,7 @@ export default class UserDataController {
         positionX,
         positionY,
         stringChallenge
-      }), 'EX', 5);
+      }), 'EX', 10);
     }
 
     return {

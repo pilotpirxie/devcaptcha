@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const asyncRedis = require("async-redis");
 const path = require('path');
 const cors = require('cors');
+const crypto = require('crypto');
 
 const redisClient = asyncRedis.createClient();
 const app = express();
@@ -66,13 +67,53 @@ app.get('/challenge', async (req, res, next) => {
   }
 });
 
+function distance2d(x, positionX: number, y, positionY: number) {
+  return Math.sqrt(Math.pow(x - positionX, 2) + Math.pow(y - positionY, 2));
+}
+
+app.post('/verify', async (req, res, next) => {
+  try {
+    const {response} = req.body;
+    const {apiKey} = req.query;
+
+    if (!(apiKey && response)) {
+      return res.sendStatus(401);
+    }
+
+    if (apiKey !== 'xyz') {
+      return res.sendStatus(403);
+    }
+
+    const {x, y, arr} = response;
+    const {stringChallenge, positionX, positionY, key} = await UserDataController.getUserData(req, fileList);
+    await redisClient.del(key);
+    
+    if (distance2d(+x, positionX, +y, positionY) > 32) {
+      return res.sendStatus(400);
+    }
+
+    for (const answer of arr) {
+      if (stringChallenge.indexOf(answer.challenge) > -1) {
+        const hash = crypto.createHash('sha256').update(answer.prefix + answer.challenge).digest('hex');
+        if (!hash.startsWith('000')) {
+          return res.sendStatus(400);
+        }
+      }
+    }
+
+    return res.sendStatus(200);
+  } catch (e) {
+    return next(e);
+  }
+});
+
 app.get('/bg.jpeg', async (req, res, next) => {
   try {
     const {backgroundPath, puzzleForBackgroundPath, positionX, positionY} = await UserDataController.getUserData(req, fileList);
     const background = new Background(backgroundPath);
     const backgroundBuffer = await background.compositePuzzle({
       compositeFilepath: puzzleForBackgroundPath,
-      outputQuality: 40,
+      outputQuality: 25,
       left: positionX,
       top: positionY,
       outputFormat: ImageFormat.JPEG
@@ -94,21 +135,24 @@ app.get('/puzzle.png', async (req, res, next) => {
       compositeFilepath: backgroundPath,
       left: positionX,
       top: positionY,
-      outputQuality: 40,
+      outputQuality: 25,
       outputFormat: ImageFormat.PNG
     });
 
-    res.set('Content-Type', 'image/jpeg');
+    res.set('Content-Type', 'image/png');
     return res.send(puzzleBuffer);
   } catch (e) {
     return next(e);
   }
 });
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
   if (err) {
-    console.error(err);
-    return res.sendStatus(400);
+    console.error(err.stack);
+    res.sendStatus(500);
   }
 });
 

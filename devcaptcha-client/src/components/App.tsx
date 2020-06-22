@@ -1,11 +1,14 @@
 import * as React from "react";
 import * as PIXI from 'pixi.js';
 import wait from '../utils/interval';
+import { sha256 } from 'js-sha256';
 
 interface IApp {
   app: PIXI.Application,
   dragging: boolean,
   puzzle: PIXI.Sprite,
+  challenges: Array<string>
+  challengeResponses: Object
 }
 
 export class App extends React.Component<any, IApp> {
@@ -20,7 +23,9 @@ export class App extends React.Component<any, IApp> {
         resolution: window.devicePixelRatio || 1,
       }),
       dragging: false,
-      puzzle: null
+      puzzle: null,
+      challenges: null,
+      challengeResponses: null,
     };
 
     this.onDragEnd = this.onDragEnd.bind(this);
@@ -55,17 +60,13 @@ export class App extends React.Component<any, IApp> {
   async componentDidMount() {
     document.getElementById('devcaptcha-container').appendChild(this.state.app.view);
     await fetch('http://localhost:8081/init');
+    await wait(100);
 
     // background
     const background = PIXI.Sprite.from('http://localhost:8081/bg.jpeg');
-    background.alpha = 0;
     background.width = this.state.app.view.width;
     background.height = this.state.app.view.height;
     this.state.app.stage.addChild(background);
-    for(let i = 0; i < 100; i++) {
-      background.alpha = i / 100;
-      await wait(8);
-    }
 
     // puzzle
     const puzzle = PIXI.Sprite.from('http://localhost:8081/puzzle.png');
@@ -128,8 +129,38 @@ export class App extends React.Component<any, IApp> {
     const submitButton = new PIXI.Graphics();
     submitButton.interactive = true;
     submitButton.buttonMode = true;
-    submitButton.on('pointerdown', () => {
-      console.log('aaa');
+    submitButton.on('pointerdown', async () => {
+      const arr = [];
+      for (const challenge of this.state.challenges) {
+        let found = false;
+        let prefix = 0;
+        while (!found) {
+          const word = sha256(prefix + challenge);
+          if (word.startsWith('000')) {
+            found = true;
+            arr.push({
+              challenge,
+              prefix
+            });
+          }
+          prefix++;
+        }
+      }
+
+      await fetch('http://localhost:8081/verify?apiKey=xyz', {
+        method: 'POST',
+        cache: 'no-cache',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          response: {
+            x: this.state.puzzle.x - this.state.puzzle.width / 2,
+            y: this.state.puzzle.y - this.state.puzzle.height / 2,
+            arr,
+          }
+        })
+      })
     });
     submitButton.beginFill(0x222222);
     submitButton.drawRect(this.state.app.view.width - 112,
@@ -199,6 +230,28 @@ export class App extends React.Component<any, IApp> {
     textTerms.x = 72;
     textTerms.y = this.state.app.view.height - 16;
     this.state.app.stage.addChild(textTerms);
+
+    const fadeOut = new PIXI.Graphics();
+    fadeOut.beginFill(0xffffff);
+    fadeOut.drawRect(0, 0,
+      this.state.app.view.width,
+      this.state.app.view.height
+    );
+    fadeOut.endFill();
+    this.state.app.stage.addChild(fadeOut);
+
+    for (let i = 0; i < 100; i++) {
+      fadeOut.alpha -= i/100;
+      await wait(16);
+    }
+
+    const response = await fetch('http://localhost:8081/challenge');
+    const data = await response.json();
+    this.setState(() => {
+      return {
+        challenges: data,
+      };
+    });
   }
 
   render() {

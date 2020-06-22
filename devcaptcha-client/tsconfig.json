@@ -9,6 +9,7 @@
     "lib": [
       "es6",
       "dom"
-    ]
+    ],
+    "allowSyntheticDefaultImports": true
   }
 }
