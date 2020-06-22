@@ -9,3 +9,14 @@ Open source captcha made with React, Node and TypeScript for DEV.to community
 [Part 2 - Environment](https://dev.to/meatboy/create-your-own-captcha-part-2-setup-typescript-webpack-and-react-254b)
 
 [Part 3 - React and PIXI.js](https://dev.to/meatboy/create-your-own-captcha-part-3-canvas-13i8)
+
+### Getting started
+```bash
+git clone https://github.com/pilotpirxie/devcaptcha.git
+cd devcaptcha/devcaptcha-server
+yarn install
+yarn start
+```
+
+### Configuration
+Captcha should be configured equally on the client and backend side to works correctly.

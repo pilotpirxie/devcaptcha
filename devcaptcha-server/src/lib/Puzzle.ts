@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import {CompositeConfig} from "../models/CompositeConfig";
 import {ImageFormat} from "./Optimize";
 const sharp = require('sharp');

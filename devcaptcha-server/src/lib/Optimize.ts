@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
-
-// eslint-disable-next-line no-unused-vars
 import {OptimizeConfig} from "../models/OptimizeConfig";
 
 export enum ImageFormat {

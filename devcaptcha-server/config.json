@@ -1,0 +1,7 @@
+{
+  "port": 8081,
+  "timeout": 8000,
+  "apiKey": "WmC8xsPD8jhufzndFF3RykNez5QtjXuZ",
+  "maxDistance": 32,
+  "leadingZeroNumber": 3
+}

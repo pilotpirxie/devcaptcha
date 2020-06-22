@@ -1,19 +1,18 @@
-// eslint-disable-next-line no-unused-vars
-import {UserData} from "../models/UserData";
+import {UserDataResponse} from "../models/UserDataResponse";
+import {UserDataRequest} from "../models/UserDataRequest";
 
-const asyncRedis = require("async-redis");
 const path = require('path');
 const {getClientIp} = require('request-ip');
 const crypto = require('crypto');
-
-const redisClient = asyncRedis.createClient();
 
 export default class UserDataController {
   static getRandomFileIndex(files: string[]) {
     return Math.floor(Math.random() * files.length);
   }
 
-  static async getUserData(req : object, fileList : Array<string>) : Promise<UserData> {
+  static async getUserData(userDataRequest : UserDataRequest) : Promise<UserDataResponse> {
+    const {req, redisClient, fileList} = userDataRequest;
+
     let backgroundPath: string;
     let puzzleForBackgroundPath: string;
     let puzzleForClientPath: string;
@@ -33,6 +32,7 @@ export default class UserDataController {
       positionX = userData.positionX;
       positionY = userData.positionY;
       stringChallenge = userData.stringChallenge;
+
     } else {
       await redisClient.del(key);
       const imageIndex = UserDataController.getRandomFileIndex(fileList);
@@ -62,7 +62,7 @@ export default class UserDataController {
       positionX,
       positionY,
       key,
-      stringChallenge
+      challenges: stringChallenge
     };
   }
 }
