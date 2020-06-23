@@ -3,5 +3,14 @@
   "timeout": 8000,
   "apiKey": "WmC8xsPD8jhufzndFF3RykNez5QtjXuZ",
   "maxDistance": 32,
-  "leadingZeroNumber": 3
+  "leadingZerosLength": 3,
+  "challengeCount": 10,
+  "challengeLength": 64,
+  "backgroundPuzzlePath": "/public/puzzle/1.png",
+  "clientPuzzlePath": "/public/puzzle/2.png",
+  "backgroundImagesPath": "/public/backgrounds/optimized",
+  "backgroundQuality": 25,
+  "puzzleWidth": 64,
+  "puzzleHeight": 64,
+  "maxTTL": 10
 }

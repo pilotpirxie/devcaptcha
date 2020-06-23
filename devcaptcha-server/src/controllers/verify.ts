@@ -31,10 +31,11 @@ export default async (req: Request, res: Response, next: NextFunction) => {
       positionX,
       positionY,
       key
-    } = await UserDataController.getUserData({
+    } = await UserDataController.getOrSetUserData({
       req,
       fileList,
-      redisClient
+      redisClient,
+      config: {...config}
     });
     await redisClient.del(key);
 
@@ -58,7 +59,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
     for (const answer of answers) {
       const hash = crypto.createHash('sha256').update(answer.prefix + answer.challenge).digest('hex');
-      if (!hash.startsWith('0'.repeat(config.leadingZeroNumber))) {
+      if (!hash.startsWith('0'.repeat(config.leadingZerosLength))) {
         return res.sendStatus(400);
       }
     }

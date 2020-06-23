@@ -10,59 +10,50 @@ export default class UserDataController {
     return Math.floor(Math.random() * files.length);
   }
 
-  static async getUserData(userDataRequest : UserDataRequest) : Promise<UserDataResponse> {
-    const {req, redisClient, fileList} = userDataRequest;
+  static async getOrSetUserData(userDataRequest : UserDataRequest) : Promise<UserDataResponse> {
+    const {req, redisClient, fileList, config} = userDataRequest;
 
-    let backgroundPath: string;
-    let puzzleForBackgroundPath: string;
-    let puzzleForClientPath: string;
-    let positionX: number;
-    let positionY: number;
-    let stringChallenge: Array<string> = [];
+    let userData: UserDataResponse;
 
     const clientIp = getClientIp(req);
-    const key = crypto.createHash('md5').update(clientIp).digest("hex");
-    const ttl = await redisClient.ttl(key);
-    if (ttl > 1) {
-      const userDataJSON = await redisClient.get(key);
-      const userData = JSON.parse(userDataJSON);
-      backgroundPath = userData.backgroundPath;
-      puzzleForBackgroundPath = userData.puzzleForBackgroundPath;
-      puzzleForClientPath = userData.puzzleForClientPath;
-      positionX = userData.positionX;
-      positionY = userData.positionY;
-      stringChallenge = userData.stringChallenge;
+    const key = crypto.createHash('md5')
+      .update(clientIp)
+      .digest("hex");
 
+    if (await redisClient.ttl(key) > 0) {
+      const userDataJSON = await redisClient.get(key);
+      userData = JSON.parse(userDataJSON);
     } else {
       await redisClient.del(key);
-      const imageIndex = UserDataController.getRandomFileIndex(fileList);
-      backgroundPath = path.join(__dirname, '../../public/backgrounds/optimized', fileList[imageIndex]);
-      puzzleForBackgroundPath = path.join(__dirname, '../../public/puzzle/1.png');
-      puzzleForClientPath = path.join(__dirname, '../../public/puzzle/2.png');
-      positionX = Math.round(Math.random() * (480 - 128)) + 64;
-      positionY = Math.round(Math.random() * (280 - 256)) + 96;
-      for (let i = 0; i < 10; i++) {
-        stringChallenge[i] = crypto.randomBytes(64).toString('base64');
-      }
+      const imageIndex = this.getRandomFileIndex(fileList);
+      const challenges = this.getRandomChallenges(config.challengeCount, config.leadingZerosLength);
 
-      await redisClient.set(key, JSON.stringify({
-        backgroundPath,
-        puzzleForBackgroundPath,
-        puzzleForClientPath,
-        positionX,
-        positionY,
-        stringChallenge
-      }), 'EX', 10);
+      userData = {
+        backgroundPath: path.join(__dirname, '../../', config.backgroundImagesPath, fileList[imageIndex]),
+        backgroundPuzzlePath: path.join(__dirname, '../../', config.backgroundPuzzlePath),
+        clientPuzzlePath: path.join(__dirname, '../../', config.clientPuzzlePath),
+        positionX: this.getRandomPuzzlePosition(0, 480, config.puzzleWidth),
+        positionY: this.getRandomPuzzlePosition(32, 248, config.puzzleHeight),
+        challenges,
+        key
+      };
+
+      await redisClient.set(key, JSON.stringify(userData), 'EX', config.maxTTL);
     }
 
-    return {
-      backgroundPath,
-      puzzleForBackgroundPath,
-      puzzleForClientPath,
-      positionX,
-      positionY,
-      key,
-      challenges: stringChallenge
-    };
+    return userData;
+  }
+
+  private static getRandomPuzzlePosition(min : number, max : number, puzzleSize : number) {
+    return Math.round(Math.random() * ((max - puzzleSize) - (min + puzzleSize))) + min + puzzleSize;
+  }
+
+  private static getRandomChallenges(challengeCount : number, challengeLength : number) {
+    const challenges = [];
+    for (let i = 0; i < challengeCount; i++) {
+      challenges.push(crypto.randomBytes(challengeLength)
+        .toString('base64'));
+    }
+    return challenges;
   }
 }

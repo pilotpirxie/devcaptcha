@@ -3,6 +3,7 @@ import Background from "../lib/Background";
 import {ImageFormat} from "../lib/Optimize";
 import Puzzle from "../lib/Puzzle";
 import {NextFunction, Request, Response} from "express";
+const config = require('../../config.json');
 
 import {
   fileList,
@@ -13,19 +14,20 @@ export default {
   background: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const {backgroundPath,
-        puzzleForBackgroundPath,
+        backgroundPuzzlePath,
         positionX,
         positionY
-      } = await UserDataController.getUserData({
+      } = await UserDataController.getOrSetUserData({
         req,
         fileList,
-        redisClient
+        redisClient,
+        config: {...config}
       });
 
       const background = new Background(backgroundPath);
       const backgroundBuffer = await background.compositePuzzle({
-        compositeFilepath: puzzleForBackgroundPath,
-        outputQuality: 25,
+        compositeFilepath: backgroundPuzzlePath,
+        outputQuality: config.backgroundQuality,
         left: positionX,
         top: positionY,
         outputFormat: ImageFormat.JPEG
@@ -42,21 +44,22 @@ export default {
     try {
       const {
         backgroundPath,
-        puzzleForClientPath,
+        clientPuzzlePath,
         positionX,
         positionY
-      } = await UserDataController.getUserData({
+      } = await UserDataController.getOrSetUserData({
         req,
         fileList,
-        redisClient
+        redisClient,
+        config: {...config}
       });
 
-      const puzzle = new Puzzle(puzzleForClientPath);
+      const puzzle = new Puzzle(clientPuzzlePath);
       const puzzleBuffer = await puzzle.compositeBackground({
         compositeFilepath: backgroundPath,
         left: positionX,
         top: positionY,
-        outputQuality: 25,
+        outputQuality: config.backgroundQuality,
         outputFormat: ImageFormat.PNG
       });
 
