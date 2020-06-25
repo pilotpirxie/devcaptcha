@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import {CompositeConfig} from "../models/CompositeConfig";
+import {PuzzleCompositeConfig} from "../models/CompositeConfig";
 import {ImageFormat} from "./Optimize";
 
 const path = require('path');
@@ -12,7 +12,7 @@ export default class Background {
     this.filepath = filepath;
   }
 
-  public async compositePuzzle(config : CompositeConfig) : Promise<Buffer> {
+  public async compositePuzzle(config : PuzzleCompositeConfig) : Promise<Buffer> {
     const bg = await sharp(path.join(this.filepath));
 
     await bg

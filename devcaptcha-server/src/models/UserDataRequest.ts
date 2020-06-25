@@ -1,8 +1,8 @@
-import {UserDataRequestConfig} from './UserDataRequestConfig';
+import {ServerConfig} from './ServerConfig';
 
 export type UserDataRequest = {
   req: object,
   fileList: Array<string>,
   redisClient: any,
-  config: UserDataRequestConfig
+  config: ServerConfig
 }

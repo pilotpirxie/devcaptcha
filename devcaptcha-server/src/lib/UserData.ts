@@ -26,7 +26,7 @@ export default class UserDataController {
     } else {
       await redisClient.del(key);
       const imageIndex = this.getRandomFileIndex(fileList);
-      const challenges = this.getRandomChallenges(config.challengeCount, config.leadingZerosLength);
+      const challenges = this.getRandomChallenges(config.challengeCount, config.challengeLength);
 
       userData = {
         backgroundPath: path.join(__dirname, '../../', config.backgroundImagesPath, fileList[imageIndex]),

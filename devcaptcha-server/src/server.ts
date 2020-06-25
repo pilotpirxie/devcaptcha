@@ -35,7 +35,7 @@ redisClient.on("error", (err) => {
 let fileList : Array<string>;
 
 Optimize.dir({
-  forceCleanCache: false,
+  forceCleanCache: config.forceCleanOpimizedImageCache,
   outputFormat: ImageFormat.JPEG,
   inputDirectory: path.join(__dirname, '../public/backgrounds/source/'),
   outputDirectory: path.join(__dirname, '../public/backgrounds/optimized/'),

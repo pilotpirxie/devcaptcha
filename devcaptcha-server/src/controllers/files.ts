@@ -30,7 +30,7 @@ export default {
         outputQuality: config.backgroundQuality,
         left: positionX,
         top: positionY,
-        outputFormat: ImageFormat.JPEG
+        outputFormat: ImageFormat.JPEG,
       });
 
       res.set('Content-Type', 'image/jpeg');
@@ -60,7 +60,9 @@ export default {
         left: positionX,
         top: positionY,
         outputQuality: config.backgroundQuality,
-        outputFormat: ImageFormat.PNG
+        outputFormat: ImageFormat.PNG,
+        puzzleWidth: config.puzzleWidth,
+        puzzleHeight: config.puzzleHeight,
       });
 
       res.set('Content-Type', 'image/png');

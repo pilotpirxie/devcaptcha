@@ -1,4 +1,4 @@
-export type UserDataRequestConfig = {
+export type ServerConfig = {
   port: number,
   timeout: number,
   apiKey:  string,
@@ -12,5 +12,6 @@ export type UserDataRequestConfig = {
   puzzleWidth: number,
   puzzleHeight: number,
   maxTTL: number,
-  backgroundQuality: number
+  backgroundQuality: number,
+  forceCleanOpimizedImageCache: boolean
 }

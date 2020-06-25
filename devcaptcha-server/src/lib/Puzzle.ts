@@ -1,4 +1,4 @@
-import {CompositeConfig} from "../models/CompositeConfig";
+import {BackgroundCompositeConfig} from "../models/CompositeConfig";
 import {ImageFormat} from "./Optimize";
 const sharp = require('sharp');
 
@@ -9,15 +9,15 @@ export default class Puzzle {
     this.filepath = filepath;
   }
 
-  public async compositeBackground (config : CompositeConfig) : Promise<Buffer> {
+  public async compositeBackground (config : BackgroundCompositeConfig) : Promise<Buffer> {
     const puzzle = await sharp(this.filepath);
     const background = sharp(config.compositeFilepath);
 
     await background.extract({
       left: config.left,
       top: config.top,
-      width: 64,
-      height: 64
+      width: config.puzzleWidth,
+      height: config.puzzleHeight
     });
 
     await puzzle
