@@ -38,29 +38,21 @@ export class App extends React.Component<any, IApp> {
   }
 
   async getResponse() : Promise<CaptchaResponse> {
+    return new Promise((resolve => {
+      const worker = new Worker(this.props.workerPath);
+      worker.postMessage({
+        challenges: this.state.challenges,
+        leadingZerosLength: this.props.leadingZerosLength
+      });
 
-    const arr = [];
-    for (const challenge of this.state.challenges) {
-      let found = false;
-      let prefix = 0;
-      while (!found) {
-        const word = sha256(prefix + challenge);
-        if (word.startsWith('0'.repeat(this.props.leadingZerosLength))) {
-          found = true;
-          arr.push({
-            challenge,
-            prefix
-          });
-        }
-        prefix++;
-      }
-    }
-
-    return {
-      x: this.state.puzzle.x - this.state.puzzle.width / 2,
-      y: this.state.puzzle.y - this.state.puzzle.height / 2,
-      challenge: arr
-    }
+      worker.addEventListener('message', (event : MessageEvent) => {
+        resolve({
+          x: this.state.puzzle.x - this.state.puzzle.width / 2,
+          y: this.state.puzzle.y - this.state.puzzle.height / 2,
+          challenge: event.data.arr
+        });
+      });
+    }))
   }
 
   onDragStart() {

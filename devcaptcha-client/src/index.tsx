@@ -15,7 +15,8 @@ export type CaptchaConfig = {
   baseUrl: string,
   puzzleAlpha: number,
   canvasContainerId: string,
-  leadingZerosLength: number
+  leadingZerosLength: number,
+  workerPath: string
 }
 
 export type CaptchaResponse = {
