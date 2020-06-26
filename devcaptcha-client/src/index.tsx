@@ -2,53 +2,34 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import { App } from "./components/App";
-
-interface ICaptcha {
-  config: CaptchaConfig,
-}
-
-export type CaptchaConfig = {
-  appendSelector: string,
-  promptText: string,
-  lockedText: string,
-  savingText: string,
-  privacyUrl: string,
-  termsUrl: string,
-  baseUrl: string,
-  puzzleAlpha: number,
-  canvasContainerId: string,
-  leadingZerosLength: number,
-  workerPath: string,
-}
-
-export type CaptchaResponse = {
-  x: number,
-  y: number,
-  challenge: object
-}
+import {CaptchaConfig, CaptchaResponse, ICaptcha} from "./models/Captcha";
 
 class DevCaptcha implements ICaptcha {
   readonly config : CaptchaConfig;
+  readonly responseRef : number = 0;
 
   public constructor(config : CaptchaConfig) {
     this.config = config;
 
-    ReactDOM.render(<App {...this.config} captcha={this} />, document.querySelector(this.config.appendSelector));
+    if (window.__getDevCaptchaResponses) {
+      this.responseRef = window.__getDevCaptchaResponses.length;
+    }
+
+    ReactDOM.render(<App {...this.config} responseRef={this.responseRef} />, document.querySelector(this.config.appendSelector));
   }
 
-  public async prepareResponse() : Promise<CaptchaResponse> {
-    return new Promise(((resolve) => {
-      resolve(window.__getResponse());
-    }));
+  public async getResponse() : Promise<CaptchaResponse> {
+    return window.__getDevCaptchaResponses[this.responseRef]();
   }
 }
 
 declare global {
   interface Window {
     DevCaptcha: ICaptcha | object,
-    __getResponse(): Promise<CaptchaResponse>
+    __getDevCaptchaResponses: Array<() => Promise<CaptchaResponse>>
   }
 }
 
-window.DevCaptcha = window.DevCaptcha || {};
-window['DevCaptcha'] = DevCaptcha;
+let _window : Window = window;
+_window['DevCaptcha'] = DevCaptcha;
+_window['__getDevCaptchaResponses'] = [];

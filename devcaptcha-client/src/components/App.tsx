@@ -1,28 +1,11 @@
 import * as React from "react";
 import * as PIXI from 'pixi.js';
 import wait from '../utils/interval';
-import {CaptchaResponse} from "../index";
+import {CaptchaConfig, CaptchaResponse} from "../models/Captcha";
+import {IApp} from "../models/App";
+import {ProgressState} from "../models/ProgressState";
 
-enum Step {
-  INITIAL,
-  SAVING,
-  LOCKED
-}
-
-interface IApp {
-  app: PIXI.Application,
-  dragging: boolean,
-  loadingSpinner: PIXI.Sprite,
-  puzzle: PIXI.Sprite,
-  lockOverlay: PIXI.Graphics,
-  progressText: PIXI.Text,
-  stepIndicator: PIXI.Text,
-  challenges: Array<string>
-  challengeResponses: Object,
-  step: Step
-}
-
-export class App extends React.Component<any, IApp> {
+export class App extends React.Component<CaptchaConfig, IApp> {
   constructor(props : any) {
     super(props);
 
@@ -41,7 +24,7 @@ export class App extends React.Component<any, IApp> {
       stepIndicator: null,
       challenges: null,
       challengeResponses: null,
-      step: Step.INITIAL
+      progressState: ProgressState.INITIAL
     };
 
     this.onDragEnd = this.onDragEnd.bind(this);
@@ -52,12 +35,12 @@ export class App extends React.Component<any, IApp> {
     this.workerEnd = this.workerEnd.bind(this);
     this.setWorkerProgress = this.setWorkerProgress.bind(this);
 
-    window.__getResponse = this.getResponse.bind(this);
+    window.__getDevCaptchaResponses.push(this.getResponse);
   }
 
   async getResponse() : Promise<CaptchaResponse> {
     return new Promise(((resolve, reject) => {
-      if (this.state.step !== Step.INITIAL) {
+      if (this.state.progressState !== ProgressState.INITIAL) {
         reject('Already responded');
       }
 
@@ -71,14 +54,14 @@ export class App extends React.Component<any, IApp> {
 
       worker.addEventListener('message', (event : MessageEvent) => {
         if (event.data.type === 'next') {
-          this.setWorkerProgress(event.data.solved, event.data.total);
+          this.setWorkerProgress(event.data['solved'], event.data['total']);
         } else if (event.data.type === 'success') {
           this.workerEnd();
 
           resolve({
             x: this.state.puzzle.x - this.state.puzzle.width / 2,
             y: this.state.puzzle.y - this.state.puzzle.height / 2,
-            challenge: event.data.arr
+            challenge: event.data['arr']
           });
         }
       });
@@ -88,7 +71,7 @@ export class App extends React.Component<any, IApp> {
   workerStart() {
     this.setState(() => {
       return {
-        step: Step.SAVING
+        progressState: ProgressState.SAVING
       };
     }, () => {
       const {puzzle, lockOverlay, stepIndicator, progressText} = this.state;
@@ -117,7 +100,7 @@ export class App extends React.Component<any, IApp> {
   workerEnd() {
     this.setState(() => {
       return {
-        step: Step.LOCKED
+        progressState: ProgressState.LOCKED
       };
     }, () => {
       this.setWorkerProgress(1, 1);
