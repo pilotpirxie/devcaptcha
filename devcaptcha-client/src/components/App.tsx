@@ -260,7 +260,6 @@ export class App extends React.Component<CaptchaConfig, IApp> {
     textPrivacy.y = this.state.app.view.height - 16;
     this.state.app.stage.addChild(textPrivacy);
 
-    // terms of service
     const textTerms = new PIXI.Text('Terms', {
       fontFamily: 'Arial',
       fontSize: 12,
@@ -275,6 +274,11 @@ export class App extends React.Component<CaptchaConfig, IApp> {
     textTerms.x = 72;
     textTerms.y = this.state.app.view.height - 16;
     this.state.app.stage.addChild(textTerms);
+
+    const logo = PIXI.Sprite.from(`${this.props.baseUrl}/static/logo.png`);
+    logo.x = this.state.app.view.width - 102;
+    logo.y = this.state.app.view.height - 24;
+    this.state.app.stage.addChild(logo);
 
     const fadeOut = new PIXI.Graphics();
     fadeOut.beginFill(0xffffff);
