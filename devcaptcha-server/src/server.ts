@@ -51,6 +51,7 @@ app.get('/challenge', clientController.challenge);
 app.post('/verify', verifyController);
 app.get('/bg.jpeg', filesController.background);
 app.get('/puzzle.png', filesController.puzzle);
+app.use('/static', express.static(path.join(__dirname, '../public/static/')))
 
 app.use(errorHandler);
 

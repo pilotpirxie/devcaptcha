@@ -2,14 +2,24 @@ import * as React from "react";
 import * as PIXI from 'pixi.js';
 import wait from '../utils/interval';
 import {CaptchaResponse} from "../index";
-import {sha256} from "js-sha256";
+
+enum Step {
+  INITIAL,
+  SAVING,
+  LOCKED
+}
 
 interface IApp {
   app: PIXI.Application,
   dragging: boolean,
+  loadingSpinner: PIXI.Sprite,
   puzzle: PIXI.Sprite,
+  lockOverlay: PIXI.Graphics,
+  progressText: PIXI.Text,
+  stepIndicator: PIXI.Text,
   challenges: Array<string>
-  challengeResponses: Object
+  challengeResponses: Object,
+  step: Step
 }
 
 export class App extends React.Component<any, IApp> {
@@ -24,21 +34,35 @@ export class App extends React.Component<any, IApp> {
         resolution: window.devicePixelRatio || 1,
       }),
       dragging: false,
+      loadingSpinner: null,
       puzzle: null,
+      lockOverlay: null,
+      progressText: null,
+      stepIndicator: null,
       challenges: null,
       challengeResponses: null,
+      step: Step.INITIAL
     };
 
     this.onDragEnd = this.onDragEnd.bind(this);
     this.onDragStart = this.onDragStart.bind(this);
     this.onDragMove = this.onDragMove.bind(this);
     this.getResponse = this.getResponse.bind(this);
+    this.workerStart = this.workerStart.bind(this);
+    this.workerEnd = this.workerEnd.bind(this);
+    this.setWorkerProgress = this.setWorkerProgress.bind(this);
 
     window.__getResponse = this.getResponse.bind(this);
   }
 
   async getResponse() : Promise<CaptchaResponse> {
-    return new Promise((resolve => {
+    return new Promise(((resolve, reject) => {
+      if (this.state.step !== Step.INITIAL) {
+        reject('Already responded');
+      }
+
+      this.workerStart();
+
       const worker = new Worker(this.props.workerPath);
       worker.postMessage({
         challenges: this.state.challenges,
@@ -46,13 +70,58 @@ export class App extends React.Component<any, IApp> {
       });
 
       worker.addEventListener('message', (event : MessageEvent) => {
-        resolve({
-          x: this.state.puzzle.x - this.state.puzzle.width / 2,
-          y: this.state.puzzle.y - this.state.puzzle.height / 2,
-          challenge: event.data.arr
-        });
+        if (event.data.type === 'next') {
+          this.setWorkerProgress(event.data.solved, event.data.total);
+        } else if (event.data.type === 'success') {
+          this.workerEnd();
+
+          resolve({
+            x: this.state.puzzle.x - this.state.puzzle.width / 2,
+            y: this.state.puzzle.y - this.state.puzzle.height / 2,
+            challenge: event.data.arr
+          });
+        }
       });
-    }))
+    }));
+  }
+
+  workerStart() {
+    this.setState(() => {
+      return {
+        step: Step.SAVING
+      };
+    }, () => {
+      const {puzzle, lockOverlay, stepIndicator, progressText} = this.state;
+      puzzle.interactive = false;
+      puzzle.buttonMode = false;
+      lockOverlay.alpha = 0.5;
+      stepIndicator.visible = true;
+      progressText.visible = true;
+
+      this.setWorkerProgress(0, 1);
+    });
+  }
+
+  setWorkerProgress(solved : number, total : number) {
+    const {stepIndicator, progressText, loadingSpinner} = this.state;
+    progressText.text = Math.ceil(solved/total * 100) + '%';
+    if (solved < total) {
+      stepIndicator.text = this.props.savingText;
+      loadingSpinner.visible = true;
+    } else {
+      stepIndicator.text = this.props.lockedText;
+      loadingSpinner.visible = false;
+    }
+  }
+
+  workerEnd() {
+    this.setState(() => {
+      return {
+        step: Step.LOCKED
+      };
+    }, () => {
+      this.setWorkerProgress(1, 1);
+    });
   }
 
   onDragStart() {
@@ -84,6 +153,14 @@ export class App extends React.Component<any, IApp> {
     await fetch(`${this.props.baseUrl}/init`);
     await wait(100);
 
+    const response = await fetch(`${this.props.baseUrl}/challenge`);
+    const data = await response.json();
+    this.setState(() => {
+      return {
+        challenges: data,
+      };
+    });
+
     const background = PIXI.Sprite.from(`${this.props.baseUrl}/bg.jpeg`);
     background.width = this.state.app.view.width;
     background.height = this.state.app.view.height;
@@ -104,12 +181,61 @@ export class App extends React.Component<any, IApp> {
       .on('touchendoutside', this.onDragEnd)
       .on('mousemove', this.onDragMove)
       .on('touchmove', this.onDragMove);
+    this.state.app.stage.addChild(puzzle);
+
+    const lockOverlay = new PIXI.Graphics();
+    lockOverlay.beginFill(0x000000);
+    lockOverlay.alpha = 0;
+    lockOverlay.drawRect(0, 0,
+      this.state.app.view.width,
+      this.state.app.view.height
+    );
+    lockOverlay.endFill();
+    this.state.app.stage.addChild(lockOverlay);
+
+    const loadingSpinner = PIXI.Sprite.from(`${this.props.baseUrl}/static/loading.png`);
+    loadingSpinner.anchor.set(0.5, 0.5);
+    loadingSpinner.visible = false;
+    loadingSpinner.x = this.state.app.view.width / 2;
+    loadingSpinner.y = this.state.app.view.height / 2;
+    this.state.app.stage.addChild(loadingSpinner);
+
+    this.state.app.ticker.add(delta => {
+      loadingSpinner.rotation += 0.1 * delta;
+    });
+
+    const progressText = new PIXI.Text('0%', {
+      fontFamily: 'Arial',
+      fontSize: 24,
+      fill: '#ffffff'
+    });
+    progressText.visible = false;
+    progressText.anchor.set(0.5, 0.5);
+    progressText.x = this.state.app.view.width / 2;
+    progressText.y = this.state.app.view.height / 2 + 12;
+    this.state.app.stage.addChild(progressText);
+
+    const stepIndicator = new PIXI.Text('Saving...', {
+      fontFamily: 'Arial',
+      fontSize: 16,
+      fontWeight: 'bold',
+      fill: '#ffffff',
+    });
+    stepIndicator.visible = false;
+    stepIndicator.anchor.set(0.5, 0.5);
+    stepIndicator.x = this.state.app.view.width / 2;
+    stepIndicator.y = this.state.app.view.height / 2 - 12;
+    this.state.app.stage.addChild(stepIndicator);
+
     this.setState(() => {
       return {
-        puzzle
+        puzzle,
+        lockOverlay,
+        progressText,
+        stepIndicator,
+        loadingSpinner
       }
     });
-    this.state.app.stage.addChild(puzzle);
 
     const stripes = new PIXI.Graphics();
     stripes.beginFill(0xffffff);
@@ -125,10 +251,9 @@ export class App extends React.Component<any, IApp> {
       this.state.app.view.width,
       32
     );
-
     this.state.app.stage.addChild(stripes);
 
-    const basicText = new PIXI.Text(this.props.prompt, {
+    const basicText = new PIXI.Text(this.props.promptText, {
       fontFamily: 'Arial',
       fontSize: 16,
       fill: '#000000',
@@ -181,14 +306,6 @@ export class App extends React.Component<any, IApp> {
       fadeOut.alpha -= i/100;
       await wait(16);
     }
-
-    const response = await fetch(`${this.props.baseUrl}/challenge`);
-    const data = await response.json();
-    this.setState(() => {
-      return {
-        challenges: data,
-      };
-    });
   }
 
   render() {

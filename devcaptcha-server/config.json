@@ -4,7 +4,7 @@
   "apiKey": "WmC8xsPD8jhufzndFF3RykNez5QtjXuZ",
   "maxDistance": 32,
   "leadingZerosLength": 3,
-  "challengeCount": 10,
+  "challengeCount": 50,
   "challengeLength": 256,
   "backgroundPuzzlePath": "/public/puzzle/1.png",
   "clientPuzzlePath": "/public/puzzle/2.png",

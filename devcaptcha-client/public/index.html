@@ -38,7 +38,9 @@
 <script>
     const devcaptcha = new DevCaptcha({
       appendSelector: '#captcha',
-      prompt: 'Move the puzzle to the correct position to solve captcha',
+      promptText: 'Move the puzzle to the correct position to solve captcha',
+      lockedText: 'Locked',
+      savingText: 'Wait',
       privacyUrl: 'https://example.com',
       termsUrl: 'https://example.com',
       baseUrl: 'http://localhost:8081',

@@ -9,14 +9,16 @@ interface ICaptcha {
 
 export type CaptchaConfig = {
   appendSelector: string,
-  prompt: string,
+  promptText: string,
+  lockedText: string,
+  savingText: string,
   privacyUrl: string,
   termsUrl: string,
   baseUrl: string,
   puzzleAlpha: number,
   canvasContainerId: string,
   leadingZerosLength: number,
-  workerPath: string
+  workerPath: string,
 }
 
 export type CaptchaResponse = {
