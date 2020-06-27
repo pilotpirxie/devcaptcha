@@ -16,7 +16,7 @@ export type CaptchaConfig = {
 export type CaptchaResponse = {
   x: number,
   y: number,
-  challenge: object
+  answers: object
 }
 
 export interface ICaptcha {

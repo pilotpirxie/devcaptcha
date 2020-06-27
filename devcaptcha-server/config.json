@@ -12,6 +12,6 @@
   "backgroundQuality": 25,
   "puzzleWidth": 64,
   "puzzleHeight": 64,
-  "maxTTL": 10,
+  "maxTTL": 30,
   "forceCleanOpimizedImageCache": false
 }

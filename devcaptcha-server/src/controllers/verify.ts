@@ -52,7 +52,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     })
 
     for (const challenge of challenges) {
-      if (answerChallenges.indexOf(challenge) <= 0) {
+      if (answerChallenges.indexOf(challenge) < 0) {
         return res.sendStatus(400);
       }
     }

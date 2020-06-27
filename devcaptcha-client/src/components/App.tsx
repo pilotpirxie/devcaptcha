@@ -61,7 +61,7 @@ export class App extends React.Component<CaptchaConfig, IApp> {
           resolve({
             x: this.state.puzzle.x - this.state.puzzle.width / 2,
             y: this.state.puzzle.y - this.state.puzzle.height / 2,
-            challenge: event.data['arr']
+            answers: event.data['arr']
           });
         }
       });

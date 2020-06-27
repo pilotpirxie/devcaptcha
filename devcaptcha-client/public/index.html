@@ -2,37 +2,65 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>Hello React!</title>
+    <title>DevCaptcha Demo</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
     <style>
-        body {
-            background-color: antiquewhite;
-            margin: 0;
-            padding: 0;
-        }
         canvas {
             box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
             border-radius: 5px;
         }
-        .flex {
+        #devcaptcha-container {
             display: flex;
-        }
-        .center {
             justify-content: center;
-            align-items: center;
-        }
-        .h-100 {
-            height: 100vh;
         }
     </style>
 </head>
 <body>
 
-<div class="h-100 flex center">
-    <div id="captcha"></div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2 mt-5">
+            <div class="card">
+                <div class="card-body">
+                    <h1>Login</h1>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input id="email" type="email" class="form-control" placeholder="Email"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input id="password" type="password" class="form-control" placeholder="Password"/>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                            Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="h-100 flex center">
-    <div id="captcha2"></div>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">I'm not a robot</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="captcha"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="onSubmit()">Submit</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
@@ -53,6 +81,28 @@
       leadingZerosLength: 3,
       workerPath: './worker.js'
     });
+
+    async function onSubmit() {
+      const response = await devcaptcha.getResponse();
+      console.info(response);
+      const verifyResponse = await fetch('http://localhost:8081/verify?apiKey=WmC8xsPD8jhufzndFF3RykNez5QtjXuZ', {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          response
+        })
+      });
+
+      console.info(verifyResponse.ok);
+    }
 </script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 </body>
 </html>
