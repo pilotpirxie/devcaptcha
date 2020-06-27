@@ -10,6 +10,8 @@ Open source captcha made with React, Node and TypeScript for DEV.to community
 
 [Part 3 - React and PIXI.js](https://dev.to/meatboy/create-your-own-captcha-part-3-canvas-13i8)
 
+[Part 4 - Verify Algorithms and Image Manipulation](https://dev.to/meatboy/create-your-own-captcha-part-4-algorithm-node-typescript-react-53j3)
+
 ### Getting started
 ```bash
 git clone https://github.com/pilotpirxie/devcaptcha.git
