@@ -1,5 +1,3 @@
-![DevCaptcha](https://i.imgur.com/9EhWrPx.png)
-
 # devcaptcha
 Open source captcha made with React, Node and TypeScript for DEV.to community 
 
@@ -9,7 +7,17 @@ Open source captcha made with React, Node and TypeScript for DEV.to community
 
 ![Screenshot 3](img/s3.png)
 
+### Features
+* Fast and efficient, uses Redis as temp storage,
+* Implements leading zero challenge,
+* Requires image recognition to find coordinates on a background,
+* Customizable, you can easily tailor to your needs,
+* Simple integration in just few minutes,
+* Written with Typescript, React, Node and Express,
+
 ### Blog series
+![DevCaptcha](https://i.imgur.com/9EhWrPx.png)
+
 [Part 1 - Architecture](https://dev.to/meatboy/create-your-own-captcha-with-react-node-part-1-architecture-1ho7)
 
 [Part 2 - Environment](https://dev.to/meatboy/create-your-own-captcha-part-2-setup-typescript-webpack-and-react-254b)
