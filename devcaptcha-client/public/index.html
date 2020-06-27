@@ -54,10 +54,12 @@
             </div>
             <div class="modal-body">
                 <div id="captcha"></div>
+                <div class="alert alert-danger mt-3 d-none" id="alert-danger">Error! Response is incorrect.</div>
+                <div class="alert alert-success mt-3 d-none" id="alert-success">Success! Response is correct.</div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="onSubmit()">Submit</button>
+                <button type="button" class="btn btn-outline-primary" data-dismiss="modal">Close</button>
+                <button id="submit-button" type="button" class="btn btn-primary" onclick="onSubmit()">Submit</button>
             </div>
         </div>
     </div>
@@ -76,13 +78,17 @@
       privacyUrl: 'https://example.com',
       termsUrl: 'https://example.com',
       baseUrl: 'http://localhost:8081',
-      puzzleAlpha: 0.9,
+      puzzleAlpha: 1,
       canvasContainerId: 'devcaptcha-container',
       leadingZerosLength: 3,
       workerPath: './worker.js'
     });
 
+    // on the production verify response only from the server side!
+    // don't expose apiKey to public!
     async function onSubmit() {
+      $('#submit-button').prop('disabled', true);
+
       const response = await devcaptcha.getResponse();
       console.info(response);
       const verifyResponse = await fetch('http://localhost:8081/verify?apiKey=WmC8xsPD8jhufzndFF3RykNez5QtjXuZ', {
@@ -97,7 +103,11 @@
         })
       });
 
-      console.info(verifyResponse.ok);
+      if (verifyResponse.ok) {
+        $('#alert-success').removeClass('d-none');
+      } else {
+        $('#alert-danger').removeClass('d-none');
+      }
     }
 </script>
 
