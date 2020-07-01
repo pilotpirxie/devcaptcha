@@ -1,12 +1,6 @@
 # devcaptcha
 Open source captcha made with React, Node and TypeScript for DEV.to community 
 
-![Screenshot 1](img/s1.png)
-
-![Screenshot 2](img/s2.png)
-
-![Screenshot 3](img/s3.png)
-
 ### Features
 * Fast and efficient, uses Redis as temp storage,
 * Implements leading zero challenge,
@@ -15,16 +9,11 @@ Open source captcha made with React, Node and TypeScript for DEV.to community
 * Simple integration in just few minutes,
 * Written with Typescript, React, Node and Express,
 
-### Blog series
-![DevCaptcha](https://i.imgur.com/9EhWrPx.png)
+![Screenshot 1](img/s1.png)
 
-[Part 1 - Architecture](https://dev.to/meatboy/create-your-own-captcha-with-react-node-part-1-architecture-1ho7)
+![Screenshot 2](img/s2.png)
 
-[Part 2 - Environment](https://dev.to/meatboy/create-your-own-captcha-part-2-setup-typescript-webpack-and-react-254b)
-
-[Part 3 - React and PIXI.js](https://dev.to/meatboy/create-your-own-captcha-part-3-canvas-13i8)
-
-[Part 4 - Verify Algorithms and Image Manipulation](https://dev.to/meatboy/create-your-own-captcha-part-4-algorithm-node-typescript-react-53j3)
+![Screenshot 3](img/s3.png)
 
 ### Getting started
 ```bash
@@ -113,3 +102,14 @@ type ServerConfig = {
   forceCleanOpimizedImageCache: boolean // run optimization on each startup
 }
 ```
+
+### Blog series
+![DevCaptcha](https://i.imgur.com/9EhWrPx.png)
+
+[Part 1 - Architecture](https://dev.to/meatboy/create-your-own-captcha-with-react-node-part-1-architecture-1ho7)
+
+[Part 2 - Environment](https://dev.to/meatboy/create-your-own-captcha-part-2-setup-typescript-webpack-and-react-254b)
+
+[Part 3 - React and PIXI.js](https://dev.to/meatboy/create-your-own-captcha-part-3-canvas-13i8)
+
+[Part 4 - Verify Algorithms and Image Manipulation](https://dev.to/meatboy/create-your-own-captcha-part-4-algorithm-node-typescript-react-53j3)
